@@ -19,3 +19,20 @@ textarea {
   font-size: 100%;
   line-height: 1.15;
 }
+
+table {
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 4px 8px;
+}
+
+th {
+  background-color: #ffff;
+}
+
+.dragEnter {
+  background-color: #8888;
+}
