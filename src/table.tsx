@@ -1,7 +1,10 @@
-import { useState } from "preact/hooks";
+import { useRef, useState } from "preact/hooks";
 
+const log = console.log.bind(console);
+
+// Note: column 0 is expected to be unique amongst all rows
 export function Table(props: {
-  columns: string[];
+  columnNames: string[];
   rows: (string | number)[][];
 }) {
   const [showColumns, setShowColumns] = useState([0, 1, 2, 3]);
@@ -9,62 +12,77 @@ export function Table(props: {
     columnId: number;
     ascending: boolean;
   } | null>(null);
+  const [selectedRow, setSelectedRow] = useState<string | null>(null);
 
-  // Use to track the drag and drop columns
-  const [dragCol, setDragCol] = useState<string | undefined>();
-  const [dropCol, setDropCol] = useState<string | undefined>();
+  // Use to track the column being dragged
+  const draggingCol = useRef("");
+
+  /*
+  Note: Drag and drop events can occur faster than preact reconciles state.
+  This causes challenges where one event will set state, and the next event
+  that needs to use the latest state will still see old state.
+
+  So don't apply state changes in the drag and drop handlers. Instead, set
+  styles directly, and just update state if the 'drop' event changes column
+  order.
+  */
 
   function onDragStart(ev: DragEvent) {
     if (!(ev.target instanceof HTMLElement)) return;
+    const colid = ev.target.closest("th")?.dataset["colid"];
+    draggingCol.current = colid!;
     ev.dataTransfer!.dropEffect = "move";
-    setDragCol(ev.target.dataset["colid"]);
   }
 
   function onDragEnter(ev: DragEvent) {
-    // Only called on the headers
+    // Get the column id of the column being entered
     if (!(ev.target instanceof HTMLElement)) return;
+    const thisColId = ev.target.closest("th")?.dataset["colid"];
+    if (!thisColId || !draggingCol.current) return;
 
-    ev.dataTransfer!.dropEffect = "move";
-    const thisCol = ev.target.dataset["colid"];
-
-    // If dragged to a different column, then highlight the column
-    if (thisCol && thisCol !== dragCol) {
-      setDropCol(thisCol);
+    // If this column is different to the column being dragged, add the CSS class
+    if (draggingCol.current !== thisColId) {
       ev.preventDefault();
+      ev.dataTransfer!.dropEffect = "move";
+      ev.target
+        .closest("table")!
+        .querySelectorAll(`[data-colid="${thisColId}"]`)
+        .forEach((elem) => elem.classList.add("dragEnter"));
     }
   }
 
   function onDragOver(ev: DragEvent) {
     if (!(ev.target instanceof HTMLElement)) return;
-    const thisCol = ev.target.dataset["colid"];
+    const thisColId = ev.target.closest("th")?.dataset["colid"];
+    if (!thisColId || !draggingCol.current) return;
 
-    // If this event handler isn't called and doesn't
-    // call preventDefault, then the target cannot be dropped on.
-    if (thisCol && thisCol !== dragCol) {
+    // If dragging something over a different column, allow the drop
+    if (draggingCol.current !== thisColId) {
       ev.dataTransfer!.dropEffect = "move";
       ev.preventDefault();
     }
   }
 
   function onDragLeave(ev: DragEvent) {
-    // Called if <Esc> key is pressed also
+    // Remove the CSS class from the column being left
     if (!(ev.target instanceof HTMLElement)) return;
-    const thisCol = ev.target.dataset["colid"];
-    if (thisCol && thisCol === dropCol) {
-      setDropCol(undefined);
-      ev.preventDefault();
-    }
+    const thisColId = ev.target.closest("th")?.dataset["colid"];
+    if (!thisColId) return;
+
+    ev.target
+      .closest("table")!
+      .querySelectorAll(`[data-colid="${thisColId}"]`)
+      .forEach((elem) => elem.classList.remove("dragEnter"));
+    ev.preventDefault();
   }
 
   function onDrop(ev: DragEvent) {
     if (!(ev.target instanceof HTMLElement)) return;
+    const thisColId = ev.target.closest("th")?.dataset["colid"];
+    if (!thisColId) return;
 
-    const thisCol = ev.target.dataset["colid"];
-    if (thisCol) {
-      // Rearrange the columns
-      if (thisCol !== dragCol) {
-        moveColumn(parseInt(dragCol!), parseInt(thisCol));
-      }
+    if (draggingCol.current) {
+      moveColumn(parseInt(draggingCol.current), parseInt(thisColId));
       ev.preventDefault();
     }
   }
@@ -72,8 +90,12 @@ export function Table(props: {
   function onDragEnd(ev: DragEvent) {
     // Called regardless of how dragging ends
     // ev.target is the source element
-    setDragCol(undefined);
-    setDropCol(undefined);
+    // Just remove any dragEnter classes from cells that may remain
+    (ev.target as HTMLElement)
+      .closest("table")!
+      .querySelectorAll(`th, td`)
+      .forEach((elem) => elem.classList.remove("dragEnter"));
+    draggingCol.current = "";
   }
 
   function moveColumn(oldIdx: number, newIdx: number) {
@@ -88,8 +110,8 @@ export function Table(props: {
   }
 
   function onSort(ev: MouseEvent) {
-    if (!(ev.target instanceof HTMLElement)) return;
-    const thisCol = ev.target.dataset["colid"];
+    if (!(ev.currentTarget instanceof HTMLTableCellElement)) return;
+    const thisCol = ev.currentTarget.dataset["colid"];
 
     if (sortColumn && thisCol === sortColumn.columnId.toString()) {
       // Toggle the sort order
@@ -130,7 +152,12 @@ export function Table(props: {
 
   function rowClicked(ev: MouseEvent) {
     // Current target is the element with the handler (in this case the tr)
-    console.log("row clicked", ev.currentTarget);
+    const rowId = (ev.currentTarget as HTMLTableRowElement).dataset["rowid"]!;
+    if (selectedRow === rowId) {
+      setSelectedRow(null);
+    } else {
+      setSelectedRow(rowId!);
+    }
   }
 
   return (
@@ -138,21 +165,32 @@ export function Table(props: {
       <thead>
         <tr>
           {showColumns.map((idx) => {
-            const isDropTarget = dropCol && idx.toString() === dropCol;
+            const isSortColumn = sortColumn?.columnId === idx;
             return (
-              <th
-                draggable
-                class={isDropTarget ? "dragEnter" : undefined}
-                onDragStart={onDragStart}
-                onDragEnter={onDragEnter}
-                onDragOver={onDragOver}
-                onDragLeave={onDragLeave}
-                onDragEnd={onDragEnd}
-                onDrop={onDrop}
-                onClick={onSort}
-                data-colid={idx.toString()}
-              >
-                {props.columns[idx]}
+              <th onClick={onSort} data-colid={idx.toString()}>
+                <span
+                  class={isSortColumn ? "sortHeaderCell" : "headerCell"}
+                  draggable
+                  onDragStart={onDragStart}
+                  onDragEnter={onDragEnter}
+                  onDragOver={onDragOver}
+                  onDragLeave={onDragLeave}
+                  onDragEnd={onDragEnd}
+                  onDrop={onDrop}
+                >
+                  {props.columnNames[idx]}
+                </span>
+                {isSortColumn ? (
+                  <svg
+                    width="16"
+                    height="16"
+                    style={`transform: rotate(${
+                      sortColumn!.ascending ? "0" : "180"
+                    }deg)`}
+                  >
+                    <polygon points="2,10 8,4 14,10" />
+                  </svg>
+                ) : null}
               </th>
             );
           })}
@@ -160,17 +198,17 @@ export function Table(props: {
       </thead>
       <tbody>
         {getSortedRows(props.rows).map((row) => (
-          <tr onClick={rowClicked}>
+          <tr
+            onClick={rowClicked}
+            data-rowid={row[0].toString()}
+            class={
+              row[0].toString() === selectedRow
+                ? "sortedTableSelectedRow"
+                : undefined
+            }
+          >
             {showColumns.map((idx) => {
-              const isDropTarget = dropCol && idx.toString() === dropCol;
-              return (
-                <td
-                  class={isDropTarget ? "dragEnter" : undefined}
-                  data-colid={idx.toString()}
-                >
-                  {row[idx]}
-                </td>
-              );
+              return <td data-colid={idx.toString()}>{row[idx]}</td>;
             })}
           </tr>
         ))}

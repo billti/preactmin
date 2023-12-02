@@ -29,15 +29,35 @@ td {
   padding: 4px 8px;
 }
 
+.headerCell {
+  padding-right: 20px;
+}
+
+.sortHeaderCell {
+  padding-right: 4px;
+}
+
 th {
   background-color: #ffff;
+  font-size: 1.1em;
+  border-bottom: 1px solid #8888;
+}
+
+.sortedTable tr:nth-child(odd) {
+  background: #eee;
 }
 
 .sortedTable tr:hover {
-  background: #eef;
+  background: #ddf;
+}
 
+.sortedTableSelectedRow td {
+  background: #aaf;
+  font-weight: 600;
 }
 
 .dragEnter {
   background-color: #8888;
+  border-left: 1.5px solid blue;
+  border-right: 1.5px solid blue;
 }

@@ -18,7 +18,7 @@ function MyElem(props: { name: string }) {
         Update
       </button>
       <Table
-        columns={["Name", "Age", "State", "Company"]}
+        columnNames={["Name", "Age", "State", "Company"]}
         rows={[
           ["Bill", 20, "WA", "Microsoft"],
           ["Joe", 30, "CA", "Apple"],
