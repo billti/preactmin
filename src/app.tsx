@@ -22,6 +22,7 @@ function MyElem(props: { name: string }) {
         rows={[
           ["Bill", 20, "WA", "Microsoft"],
           ["Joe", 30, "CA", "Apple"],
+          ["Dave", 50, "CA", "Facebook"],
         ]}
       />
     </>

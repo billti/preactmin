@@ -33,6 +33,11 @@ th {
   background-color: #ffff;
 }
 
+.sortedTable tr:hover {
+  background: #eef;
+
+}
+
 .dragEnter {
   background-color: #8888;
 }
