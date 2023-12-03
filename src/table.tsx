@@ -1,7 +1,6 @@
 /* TODO
-- Menu to show/hide columns
-- Menu to delete rows
 - Menu to fire recalculation
+- Simplify the drag and drop code
 */
 
 import { useRef, useState } from "preact/hooks";
@@ -12,6 +11,7 @@ export function Table(props: {
   rows: (string | number)[][];
   initialColumns: number[];
   onRowSelected(rowId: string): void;
+  onRowDeleted(rowId: string): void;
 }) {
   const [showColumns, setShowColumns] = useState(props.initialColumns);
   const [sortColumn, setSortColumn] = useState<{
@@ -159,7 +159,7 @@ export function Table(props: {
   }
 
   function rowClicked(rowId: string) {
-    const newSelectedRow = selectedRow === rowId ? "" : rowId; 
+    const newSelectedRow = selectedRow === rowId ? "" : rowId;
     setSelectedRow(newSelectedRow);
     props.onRowSelected(newSelectedRow);
   }
@@ -176,6 +176,45 @@ export function Table(props: {
   function onClickColumnMenu(ev: MouseEvent) {
     setShowRowMenu("");
     setShowColumnMenu(!showColumnMenu);
+  }
+
+  function getColumnList() {
+    return props.columnNames.map((name, idx) => ({
+      name,
+      idx,
+      show: showColumns.includes(idx),
+    }));
+  }
+
+  function toggleColumn(idx: number) {
+    const newColumns = [...showColumns];
+    const arrIdx = newColumns.indexOf(idx);
+    if (arrIdx === -1) {
+      // Not currently showing, need to add it
+      if (idx > newColumns.length) {
+        // The column position is greater than the number of columns currently showing
+        // So just add to the end
+        newColumns.push(idx);
+      } else {
+        // Insert at the correct position
+        newColumns.splice(idx, 0, idx);
+      }
+    } else {
+      newColumns.splice(arrIdx, 1);
+    }
+    setShowColumns(newColumns);
+  }
+
+  function deleteRow(e: MouseEvent, rowId: string) {
+    e.stopPropagation();
+    // Clear out any menus or selections for the row if needed
+    console.log("Deleting row " + rowId);
+    setShowRowMenu("");
+    if (selectedRow === rowId) {
+      setSelectedRow("");
+      props.onRowSelected("");
+    }
+    props.onRowDeleted(rowId);
   }
 
   return (
@@ -213,9 +252,14 @@ export function Table(props: {
                 }
                 style="position: absolute; top: 16; left: 0;"
               >
-                {props.columnNames.map((name, idx) => (
-                  <div width="100px" height="20px" class="menuItem">
-                    {name}
+                {getColumnList().map((elem) => (
+                  <div
+                    width="100px"
+                    height="20px"
+                    class={elem.show ? "columnSelected" : "menuItem"}
+                    onClick={() => toggleColumn(elem.idx)}
+                  >
+                    {elem.name}
                   </div>
                 ))}
               </div>
@@ -280,7 +324,12 @@ export function Table(props: {
                   {showRowMenu === rowId ? (
                     <div class="showColumnMenu" style="top: 16px; left: 0px;">
                       <div class="menuItem">Recalculate</div>
-                      <div class="menuItem">Delete</div>
+                      <div
+                        class="menuItem"
+                        onClick={(e) => deleteRow(e, rowId)}
+                      >
+                        Delete
+                      </div>
                     </div>
                   ) : null}
                 </div>

@@ -79,6 +79,7 @@ th {
 .menuItem {
   cursor: pointer;
   padding: 4px;
+  margin: 2px;
   font-size: 15px;
   font-weight: 400;
 }
@@ -87,7 +88,13 @@ th {
   background-color: #eee;
 }
 
-.menuItemSelected {
-  background-color: #aaf;
-  font-weight: 600;
+.columnSelected {
+  cursor: pointer;
+  padding: 4px;
+  font-weight: 400;
+  font-size: 15px;
+  background-color: #44d;
+  color: white;
+  margin: 2px;
+  border-radius: 3px;
 }
