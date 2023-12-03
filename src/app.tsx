@@ -6,17 +6,14 @@ import { useState } from "preact/hooks";
 import { Table } from "./table";
 
 function MyElem(props: { name: string }) {
-  const [name, setName] = useState(props.name);
-  const onClick = () => setName(name + "s");
+  function onRowSelected(rowId: string) {
+    // Will fire with an empty string if the row is deselected
+    console.log("Row selected: " + rowId);
+  }
 
   return (
     <>
       <h1>Preact minimal sample</h1>
-      <div>{"Hello, " + name}</div>
-      <br />
-      <button type="button" onClick={onClick}>
-        Update
-      </button>
       <Table
         columnNames={["Name", "Age", "State", "Company"]}
         rows={[
@@ -24,6 +21,8 @@ function MyElem(props: { name: string }) {
           ["Joe", 30, "CA", "Apple"],
           ["Dave", 50, "CA", "Facebook"],
         ]}
+        initialColumns={[0, 1, 2, 3]}
+        onRowSelected={onRowSelected}
       />
     </>
   );

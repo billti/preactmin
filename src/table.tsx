@@ -1,18 +1,26 @@
-import { useRef, useState } from "preact/hooks";
+/* TODO
+- Menu to show/hide columns
+- Menu to delete rows
+- Menu to fire recalculation
+*/
 
-const log = console.log.bind(console);
+import { useRef, useState } from "preact/hooks";
 
 // Note: column 0 is expected to be unique amongst all rows
 export function Table(props: {
   columnNames: string[];
   rows: (string | number)[][];
+  initialColumns: number[];
+  onRowSelected(rowId: string): void;
 }) {
-  const [showColumns, setShowColumns] = useState([0, 1, 2, 3]);
+  const [showColumns, setShowColumns] = useState(props.initialColumns);
   const [sortColumn, setSortColumn] = useState<{
     columnId: number;
     ascending: boolean;
   } | null>(null);
-  const [selectedRow, setSelectedRow] = useState<string | null>(null);
+  const [selectedRow, setSelectedRow] = useState<string>("");
+  const [showColumnMenu, setShowColumnMenu] = useState(false);
+  const [showRowMenu, setShowRowMenu] = useState("");
 
   // Use to track the column being dragged
   const draggingCol = useRef("");
@@ -150,20 +158,69 @@ export function Table(props: {
     return sortedRows;
   }
 
-  function rowClicked(ev: MouseEvent) {
-    // Current target is the element with the handler (in this case the tr)
-    const rowId = (ev.currentTarget as HTMLTableRowElement).dataset["rowid"]!;
-    if (selectedRow === rowId) {
-      setSelectedRow(null);
+  function rowClicked(rowId: string) {
+    const newSelectedRow = selectedRow === rowId ? "" : rowId; 
+    setSelectedRow(newSelectedRow);
+    props.onRowSelected(newSelectedRow);
+  }
+
+  function onClickRowMenu(ev: MouseEvent, rowid: string) {
+    ev.stopPropagation();
+    if (showRowMenu === rowid) {
+      setShowRowMenu("");
     } else {
-      setSelectedRow(rowId!);
+      setShowRowMenu(rowid!);
     }
+  }
+
+  function onClickColumnMenu(ev: MouseEvent) {
+    setShowRowMenu("");
+    setShowColumnMenu(!showColumnMenu);
   }
 
   return (
     <table class="sortedTable">
       <thead>
         <tr>
+          <th>
+            <div style="position: relative">
+              <svg
+                width="16"
+                height="16"
+                style="position: relative;"
+                onClick={onClickColumnMenu}
+              >
+                <rect x="1" y="3.5" width="14" height="2" fill="black" />
+                <rect
+                  x="1"
+                  y="3"
+                  width="14"
+                  height="12"
+                  stroke="gray"
+                  stroke-width="1"
+                  fill="none"
+                  rx="2"
+                />
+                <path
+                  stroke="gray"
+                  stroke-width="1"
+                  d="M4.5,3 V15 M8,3 V15 M11.5,3 V15"
+                />
+              </svg>
+              <div
+                class={
+                  showColumnMenu ? "columnMenu showColumnMenu" : "columnMenu"
+                }
+                style="position: absolute; top: 16; left: 0;"
+              >
+                {props.columnNames.map((name, idx) => (
+                  <div width="100px" height="20px" class="menuItem">
+                    {name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </th>
           {showColumns.map((idx) => {
             const isSortColumn = sortColumn?.columnId === idx;
             return (
@@ -197,21 +254,43 @@ export function Table(props: {
         </tr>
       </thead>
       <tbody>
-        {getSortedRows(props.rows).map((row) => (
-          <tr
-            onClick={rowClicked}
-            data-rowid={row[0].toString()}
-            class={
-              row[0].toString() === selectedRow
-                ? "sortedTableSelectedRow"
-                : undefined
-            }
-          >
-            {showColumns.map((idx) => {
-              return <td data-colid={idx.toString()}>{row[idx]}</td>;
-            })}
-          </tr>
-        ))}
+        {getSortedRows(props.rows).map((row) => {
+          const rowId = row[0].toString();
+          return (
+            <tr
+              onClick={() => rowClicked(rowId)}
+              data-rowid={rowId}
+              class={
+                rowId === selectedRow ? "sortedTableSelectedRow" : undefined
+              }
+            >
+              <td>
+                <div
+                  style="position: relative"
+                  onClick={(e) => onClickRowMenu(e, rowId)}
+                >
+                  <svg width="16" height="16" style="position: relative;">
+                    <path
+                      stroke-width="1.5"
+                      stroke="gray"
+                      stroke-linecap="round"
+                      d="M4,5 h8 M4,8 h8 M4,11 h8"
+                    />
+                  </svg>
+                  {showRowMenu === rowId ? (
+                    <div class="showColumnMenu" style="top: 16px; left: 0px;">
+                      <div class="menuItem">Recalculate</div>
+                      <div class="menuItem">Delete</div>
+                    </div>
+                  ) : null}
+                </div>
+              </td>
+              {showColumns.map((idx) => {
+                return <td data-colid={idx.toString()}>{row[idx]}</td>;
+              })}
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );

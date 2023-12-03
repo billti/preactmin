@@ -48,11 +48,11 @@ th {
 }
 
 .sortedTable tr:hover {
-  background: #ddf;
+  background: #ddd;
 }
 
 .sortedTableSelectedRow td {
-  background: #aaf;
+  background: #ddf;
   font-weight: 600;
 }
 
@@ -60,4 +60,34 @@ th {
   background-color: #8888;
   border-left: 1.5px solid blue;
   border-right: 1.5px solid blue;
+}
+
+.columnMenu {
+  display: none;
+}
+
+.showColumnMenu {
+  display: block;
+  position: absolute;
+  background-color: #ffff;
+  border: 1px solid #8888;
+  padding: 4px;
+  z-index: 100;
+  text-align: left;
+}
+
+.menuItem {
+  cursor: pointer;
+  padding: 4px;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.menuItem:hover {
+  background-color: #eee;
+}
+
+.menuItemSelected {
+  background-color: #aaf;
+  font-weight: 600;
 }
