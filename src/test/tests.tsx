@@ -1,14 +1,11 @@
-/// <reference types="mocha" />
-
-// Mocha APIs will be abailable in the global scope
-// See https://mochajs.org/ for usage details
+/// <reference types="jasmine" />
 
 import { render, waitFor, fireEvent, screen } from "@testing-library/preact";
 import { MyElem } from "../MyElem.js";
 
 describe("Test", () => {
   it("should pass", () => {
-    console.log("Test passed");
+    expect(!false).toBe(true);
   });
 });
 
@@ -19,17 +16,7 @@ describe("Component", () => {
     fireEvent.click(button);
     await waitFor(() => {
       const text = screen.getByText("Hello, Bills");
-      if (!text) {
-        throw new Error("Text not found");
-      } else {
-        console.log("Text found");
-      }
+      expect(text).toBeDefined();
     });
-  });
-});
-
-describe("Failure", () => {
-  it("should fail", () => {
-    throw new Error("Test failed");
   });
 });
