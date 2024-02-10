@@ -15,7 +15,6 @@
     "@types/jasmine": "^5.1.4",
     "esbuild": "^0.19.8",
     "jasmine-core": "^5.1.2",
-    "mathjs": "^12.3.2",
     "preact": "^10.19.2",
     "typescript": "^5.3.2"
   }
