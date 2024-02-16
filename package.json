@@ -4,6 +4,7 @@
   "description": "Minimal preact starter site",
   "scripts": {
     "start": "esbuild src/app.tsx src/test/tests.tsx --outdir=public/lib --bundle --sourcemap --servedir=public",
+    "build": "esbuild src/app.tsx src/test/tests.tsx --outdir=public/lib --bundle --minify --sourcemap",
     "tsc": "tsc -p ./src --outDir ./bin",
     "servejs": "esbuild bin/app.js --outdir=public/lib --bundle --sourcemap --servedir=public"
   },
@@ -12,7 +13,9 @@
   "license": "ISC",
   "devDependencies": {
     "@testing-library/preact": "^3.2.3",
+    "@types/d3": "^7.4.3",
     "@types/jasmine": "^5.1.4",
+    "d3": "^7.8.5",
     "esbuild": "^0.19.8",
     "jasmine-core": "^5.1.2",
     "preact": "^10.19.2",
