@@ -41,3 +41,5 @@ export const Ket0 = vec2([1, 0]);
 export const Ket1 = vec2([0, 1]);
 export const KetPlus = vec2([1, 1]).mul(Math.SQRT1_2);
 export const KetMinus = vec2([1, -1]).mul(Math.SQRT1_2);
+export const KetPlusI = vec2("1,i").mul(Math.SQRT1_2);
+export const KetMinusI = vec2("1,-i").mul(Math.SQRT1_2);

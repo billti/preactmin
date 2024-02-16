@@ -10,6 +10,8 @@ import {
   Ket1,
   KetPlus,
   KetMinus,
+  KetPlusI,
+  KetMinusI,
 } from "../gates.js";
 
 import { Cplx, m2x2, vec2 } from "../cplx.js";
@@ -63,6 +65,18 @@ describe("Gate application", () => {
     const result = PauliY.mulVec2(Ket0);
     const expected = vec2("0,i");
     expect(result.compare(expected)).toBe(true);
+  });
+
+  it("|0> lands in |+i> after Hadamard and SGate", () => {
+    const Xplus = Hadamard.mulVec2(Ket0);
+    const result = SGate.mulVec2(Xplus);
+    expect(result.compare(KetPlusI)).toBe(true);
+  });
+
+  it("|1> lands in |-i> after Hadamard and SGate", () => {
+    const Xneg = Hadamard.mulVec2(Ket1);
+    const result = SGate.mulVec2(Xneg);
+    expect(result.compare(KetMinusI)).toBe(true);
   });
 });
 
