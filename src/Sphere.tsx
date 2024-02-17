@@ -12,6 +12,12 @@ import { type MultiLineString } from "geojson";
 //   - Transparent: https://observablehq.com/@d3/projection-reflectx?collection=@d3/d3-geo
 //   - Shading: https://observablehq.com/@d3/orthographic-shading?collection=@d3/d3-geo
 // - Canvas API: https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API
+// - DOMPoint and matrix APIs: https://www.w3.org/TR/geometry-1/
+// - CSS transforms: https://developer.mozilla.org/en-US/docs/Web/CSS/transform & https://www.w3.org/TR/css-transforms-1/
+// - Matrix math: https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Matrix_math_for_the_web
+// - Perspective:
+//   - https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/WebGL_model_view_projection
+//   - https://www.w3.org/TR/css-transforms-2/#perspective
 
 // TODO: 
 // - See https://observablehq.com/@d3/projection-reflectx?collection=@d3/d3-geo for example with drag to rotate (disable zoom)
@@ -19,6 +25,16 @@ import { type MultiLineString } from "geojson";
 // - Try drawing lines from the |0> and |1> axis to check rendering paths
 // - Try to draw the (labeled) X, Y, Z axes on the sphere?
 // - Try to draw the lines with gradients to show the path of the qubit
+// - Consider using a Spherical Fibonacci grid to draw the sphere: https://observablehq.com/@fil/icosahedron
+
+function test() {
+  // x, y, z, w. w default to 1, others to 0.
+  // Can also use the syntax: const p = DOMPoint.fromPoint({x: 1, y: 2});
+  const point = new DOMPoint(3, 2, 1);
+
+  const mat = new DOMMatrix([1,2,3,4,5,6]);
+  point.matrixTransform(mat);
+}
 
 export function Sphere() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
